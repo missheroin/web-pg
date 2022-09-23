@@ -1,0 +1,87 @@
+# tasks file for pg
+
+- name: epel-install
+  yum:
+    name:  
+      - nano
+      - mc
+    state: present
+
+- name: pgs
+  copy:
+    src: pgdg-redhat-all.repo
+    dest: /etc/yum.repos.d/pgdg-redhat-all.repo
+
+- name: nginx and postgres
+  yum:  
+    name:  
+      - postgresql14-server
+      - wget
+      - unzip
+    state: present 
+
+- name: "Initialize PostgreSQL"
+  shell: "/usr/pgsql-14/bin/postgresql-14-setup initdb"
+  tags: 
+    - init
+
+    
+- name: copypast pg.conf
+  copy:
+    src: pg_hba
+    dest: /var/lib/pgsql/14/data/pg_hba.conf 
+  become: yes
+  become_user: root
+
+
+- name: copypast pg.conf
+  copy:
+    src: postgresql.conf
+    dest: /var/lib/pgsql/14/data/postgresql.conf
+  become: yes
+  become_user: root
+  notify:
+    - restart pg
+
+
+
+
+- name: "script"
+  command: "systemctl start postgresql-14.service "
+  become_user: root
+
+- name: fyf
+  copy:
+    src: demo-small-20170815.sql
+    dest: /var/lib/pgsql/demo-small-20170815.sql
+
+# - name: "script"
+#   ansible.builtin.shell: psql -f /var/lib/pgsql/demo-small-20170815.sql
+#   # become_user: postgres
+
+# - name: user eve 
+#   ansible.builtin.user:
+#     name: eve
+#     password: "{{ 'eve' | password_hash('sha512', 'mysecretsalt') }}"
+#   tags: eve
+
+- name: change pswd postgres
+  shell: sudo -u postgres psql -c "alter user postgres with encrypted password 'postgres';"
+  become: yes
+  become_user: root
+  tags: change 
+
+
+- name: "script"
+  command: "psql -f /var/lib/pgsql/demo-small-20170815.sql"
+  become: yes
+  become_user: postgres
+  tags: finish
+
+
+
+# - name: change
+#   shell: sudo -u postgres psql demo -c "ALTER DATABASE demo OWNER TO  eve;"
+#   # become: yes
+#   # become_user: root
+#   tags: db

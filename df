@@ -1,0 +1,29 @@
+
+- name: "script"
+  command: "systemctl start postgresql-14.service "
+  become_user: root
+
+- name: fyf
+  copy:
+    src: demo-small-20170815.sql
+    dest: demo-small-20170815.sql
+
+- name: "script"
+  command: "psql -f demo-small-20170815.sql"
+  become_user: postgres
+
+
+- name: Create appclient user with SCRAM-hashed password
+  community.postgresql.postgresql_user:
+    name: eve
+    password: "eve"
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+
+
+- name: 
+  postgresql_owner:
+    db: demo
+    new_owner: eve
+    obj_name: postgres
+    obj_type: database

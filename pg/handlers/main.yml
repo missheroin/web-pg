@@ -1,0 +1,13 @@
+---
+# handlers file for pg
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: restart pg
+  systemd:
+    name: postgresql-14.service 
+    state: restarted
+    enabled: yes
